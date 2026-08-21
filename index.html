@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KTB's Nutrition Game - RNIMT</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #27ae60;
+            --danger: #c0392b;
+            --bg: #f0f8ff;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #fbc531, #00d2d3, #ff9f43, #54a0ff);
+            background-size: 400% 400%;
+            animation: gradientBG 12s ease infinite;
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .game-wrapper {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+            max-width: 980px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            border: 5px solid #ff4757;
+        }
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(90deg, #ff4757, #ff6b81, #2ed573);
+            color: white;
+            padding: 14px 20px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: inset 0 -2px 5px rgba(0,0,0,0.2);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        .top-section {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .riddle-card {
+            flex: 1.3;
+            background: linear-gradient(135deg, #fff200, #ff9f43);
+            border: 3px solid #e67e22;
+            border-radius: 14px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+        }
+        .riddle-content h3 {
+            margin: 0 0 8px 0;
+            color: #ffffff;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            background: rgba(0, 0, 0, 0.15);
+            padding: 6px 10px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+        .riddle-content p {
+            margin: 0;
+            font-size: 1.15rem;
+            color: #1e272e;
+            font-weight: 800;
+            line-height: 1.4;
+        }
+        .control-panel {
+            flex: 1;
+            background: linear-gradient(135deg, #a55eea, #4b7bec);
+            border: 3px solid #3867d6;
+            border-radius: 14px;
+            padding: 12px 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+        }
+        .control-title {
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: #fff;
+            text-align: center;
+            margin-bottom: 8px;
+            letter-spacing: 1.5px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            text-align: center;
+        }
+        .tool-btn {
+            background: #ffffff;
+            border: 2px solid #fed330;
+            border-radius: 10px;
+            padding: 8px 2px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            font-weight: bold;
+            color: #2d3436;
+            white-space: nowrap;
+            transition: all 0.2s;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+        .tool-btn:hover { background: #fff200; transform: translateY(-2px); }
+        .tool-btn.active-tool { border-color: #2ed573; background: #2ed573; color: white; }
+        .tool-icon { font-size: 1.2rem; margin-bottom: 2px; }
+
+        .grid-section-title {
+            text-align: center;
+            background: linear-gradient(90deg, #2ed573, #00d2d3, #54a0ff);
+            color: white;
+            padding: 10px;
+            font-weight: bold;
+            border-radius: 10px;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        
+        /* Selectable Answer Grid */
+        .answer-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+        .answer-card {
+            border: 3px solid #2f3640;
+            border-radius: 12px;
+            padding: 10px 4px;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 75px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .answer-card:hover { transform: translateY(-4px) scale(1.02); box-shadow: 0 8px 16px rgba(0,0,0,0.2); filter: brightness(1.05); }
+        .card-symbol {
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: #1e272e;
+            text-shadow: 0 1px 1px rgba(255,255,255,0.9);
+        }
+        .card-label {
+            font-size: 0.62rem;
+            color: #2f3640;
+            margin-top: 4px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+        /* Marker indicators */
+        .mark-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: rgba(255,255,255,0.95);
+            border-radius: 10px;
+            z-index: 10;
+        }
+        .mark-correct { color: #2ed573; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .mark-wrong { color: #ff4757; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .draft-note {
+            position: absolute;
+            bottom: 4px;
+            right: 6px;
+            font-size: 0.75rem;
+            color: #009432;
+            font-weight: 900;
+            background: rgba(255,255,255,0.9);
+            padding: 1px 4px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        /* Modal Popup */
+        .modal {
+            display: flex;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background: linear-gradient(145deg, #ffffff, #f1f2f6);
+            padding: 35px;
+            border-radius: 18px;
+            text-align: center;
+            max-width: 440px;
+            width: 90%;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            border: 4px solid #00d2d3;
+        }
+        .modal-btn {
+            background: linear-gradient(90deg, #2ed573, #26af5f);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.05rem;
+            margin-top: 20px;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(46,213,115,0.4);
+            transition: transform 0.1s;
+        }
+        .modal-btn:hover { transform: scale(1.05); }
+        .passcode-input {
+            margin-top: 15px;
+            padding: 10px;
+            font-size: 1.2rem;
+            letter-spacing: 4px;
+            text-align: center;
+            width: 160px;
+            border: 2px solid #00d2d3;
+            border-radius: 8px;
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-wrapper">
+    <!-- Header -->
+    <div class="header-bar">
+        <div>Stats | Score: <span id="score">0</span></div>
+        <div>Time: <span id="timer">0:00</span>s</div>
+        <div>Strikes: <span id="strikes">0</span>/3</div>
+    </div>
+
+    <!-- Top Section: Riddle & Control Panel -->
+    <div class="top-section">
+        <!-- Riddle Display -->
+        <div class="riddle-card">
+            <div class="riddle-content">
+                <h3>RIDDLE <span id="q-number">1</span> OF 25</h3>
+                <p id="riddle-text">Enter passcode to begin...</p>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="control-panel">
+            <div class="control-title">CONTROL PANEL</div>
+            <div class="tools-grid">
+                <button class="tool-btn" onclick="triggerUndo()" title="Undo last action">
+                    <span class="tool-icon">↩</span>UNDO
+                </button>
+                <button class="tool-btn" id="eraser-tool" onclick="toggleEraser()" title="Eraser mode">
+                    <span class="tool-icon">🧹</span>ERASER
+                </button>
+                <button class="tool-btn" id="pencil-tool" onclick="togglePencil()" title="Pencil draft mode">
+                    <span class="tool-icon">✏️</span>PENCIL <span id="pencil-badge" style="color:#d63031;">OFF</span>
+                </button>
+                <button class="tool-btn" onclick="useClue()" title="Free pick hint">
+                    <span class="tool-icon">🔍</span>FREE PICKS <span id="clue-count">3</span>
+                </button>
+                <button class="tool-btn" style="grid-column: span 4; background:linear-gradient(90deg, #ff6b81, #ff4757); color:white; border-color:#c0392b;" onclick="quitGame()" title="Quit game">
+                    <span class="tool-icon">❌</span>QUIT GAME
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Answer Grid Section -->
+    <div class="grid-section-title">SELECTABLE ANSWER GRID (PICK CORRECT NUTRIENT CARD BELOW)</div>
+    <div class="answer-grid" id="answer-grid">
+        <!-- Generated dynamically via JS -->
+    </div>
+</div>
+
+<!-- Popup Modal -->
+<div class="modal" id="popup-modal">
+    <div class="modal-content">
+        <h2 id="modal-title" style="margin-top:0; color: #00a8ff;">SECURE ACCESS</h2>
+        <p id="modal-msg" style="color: #444; font-size: 1.05rem; line-height: 1.5;">Enter the 4-digit passcode provided to unlock the mission game:</p>
+        <div id="passcode-container">
+            <input type="password" id="passcode-input" class="passcode-input" maxlength="4" placeholder="••••">
+        </div>
+        <button class="modal-btn" id="modal-btn" onclick="verifyPasscode()">Verify & Start</button>
+    </div>
+</div>
+
+<script>
+    const questionsData = [
+        { id: 1, text: "130 to 325 grams are the it needs, Fuel for the brain as it leads. Name this energy seeds.", answer: "Carbs" },
+        { id: 2, text: "Men max 36 g, women 25 g sweet, What's this in daily eat?", answer: "Sugars" },
+        { id: 3, text: "Just over 1 mg helps nerves and energy flow, Which vitamin am I?", answer: "Vitamin B1 (Thiamine)" },
+        { id: 4, text: "30 mcg for hair and skin and works within. Which vitamin is this kin?", answer: "Vitamin B7 (Biotin)" },
+        { id: 5, text: "420 for him, 320 for her; helps muscles stir. Which mineral to confer?", answer: "Magnesium (Mg)" },
+        { id: 6, text: "Omega-6, 11 to 17 g a day; keeps health in play. Name this fatty acid's way.", answer: "Linoleic Acid" },
+        { id: 7, text: "No RDA, less than 300 mg is best; limit for heart's quest. Name this blood fat test.", answer: "Cholesterol" },
+        { id: 8, text: "25 to 34 grams help your core; keeps digestion sore no more. What nutrient's this score?", answer: "Dietary Fiber" },
+        { id: 9, text: "1.3 mg aids blood cells and nerves; what your body deserves. Guess this vitamin's reserves.", answer: "Vitamin B6 (Pyridoxine)" },
+        { id: 10, text: "Limit 1500 to 2300 mg salt; can cause health fault. Which mineral adults exalt?", answer: "Sodium (Na)" },
+        { id: 11, text: "Six hundred (600) units, sunshine's gift, Calcium absorption is my lift. Vitamin?", answer: "Vitamin D" },
+        { id: 12, text: "Men need 120, women 90 too; helps blood glue. Name this nutrient true.", answer: "Vitamin K" },
+        { id: 13, text: "Just 2.4 micrograms daily you need; lets your nerves lead. Which vitamin does this speed?", answer: "Vitamin B12 (Cobalamin)" },
+        { id: 14, text: "Omega-3, 1.1 to 1.6 g; heart's best friend. What fatty acid is this trend?", answer: "Alpha Linolenic Acid (ALA)" },
+        { id: 15, text: "90 mg fights colds, you see; helps immunity. Name this vitamin key.", answer: "Vitamin C" },
+        { id: 16, text: "About 5 mg, energy I fuel, that's my rule. Which vitamin keeps you cool?", answer: "Vitamin B5 (Pantothenic Acid)" },
+        { id: 17, text: "8 mg men, 18 women with bleed; what your body will need. Guess this mineral seed.", answer: "Iron (Fe)" },
+        { id: 18, text: "16 mg stops pellagra's fight and keeps your health tight. What vitamin is this bright light?", answer: "Vitamin B3 (Niacin)" },
+        { id: 19, text: "1000 to 1200 mg strong; keeps your bones long. Name this mineral song.", answer: "Calcium (Ca)" },
+        { id: 20, text: "1.3 mg daily keeps cells in line and helps you shine. Name this vitamin fine.", answer: "Vitamin B2 (Riboflavin)" },
+        { id: 21, text: "3400 mg men, 2600 women; helps blood flow in. Name this mineral kin.", answer: "Potassium (K)" },
+        { id: 22, text: "15 mg antioxidant strong and keeps skin long. What vitamin belongs?", answer: "Vitamin E" },
+        { id: 23, text: "250 to 500 mg wise; Heart health allies. What omega-3 prize?", answer: "EPA & DHA" },
+        { id: 24, text: "I keep your eyes sharp & skin bright, 900 units daily keeps your sight right. Which vitamin?", answer: "Vitamin A" },
+        { id: 25, text: "400 mcg stops birth defect pain; the vitamin to gain. Name this nutrient is main.", answer: "Vitamin B9 (Folate)" }
+    ];
+
+    const gridCards = [
+        { name: "Vitamin A", symbol: "A", label: "VITAMIN A", color: "#ffeaa7" },
+        { name: "Vitamin B1 (Thiamine)", symbol: "B1", label: "THIAMINE", color: "#fab1a0" },
+        { name: "Vitamin B3 (Niacin)", symbol: "B3", label: "NIACIN", color: "#ff7675" },
+        { name: "Vitamin B2 (Riboflavin)", symbol: "B2", label: "RIBOFLAVIN", color: "#55efc4" },
+        { name: "Vitamin B5 (Pantothenic Acid)", symbol: "B5", label: "PANTOTHENIC", color: "#81ecec" },
+        { name: "Vitamin B6 (Pyridoxine)", symbol: "B6", label: "PYRIDOXINE", color: "#74b9ff" },
+        { name: "Vitamin B7 (Biotin)", symbol: "B7", label: "BIOTIN", color: "#a29bfe" },
+        { name: "Vitamin B9 (Folate)", symbol: "B9", label: "FOLATE", color: "#fdcb6e" },
+        { name: "Vitamin B12 (Cobalamin)", symbol: "B12", label: "COBALAMIN", color: "#e84393" },
+        { name: "Vitamin C", symbol: "C", label: "VITAMIN C", color: "#00b894" },
+        { name: "Vitamin D", symbol: "D", label: "VITAMIN D", color: "#00cec9" },
+        { name: "Vitamin E", symbol: "E", label: "VITAMIN E", color: "#0984e3" },
+        { name: "Vitamin K", symbol: "K", label: "VITAMIN K", color: "#6c5ce7" },
+        { name: "Alpha Linolenic Acid (ALA)", symbol: "ALA", label: "ALPHA LINOLENIC", color: "#ffeaa7" },
+        { name: "Linoleic Acid", symbol: "LA", label: "LINOLEIC ACID", color: "#fab1a0" },
+        { name: "EPA & DHA", symbol: "EPA/DHA", label: "EPA & DHA", color: "#55efc4" },
+        { name: "Carbs", symbol: "CHO", label: "Carbs", color: "#fd79a8" },
+        { name: "Sugars", symbol: "S", label: "SUGARS", color: "#fdcb6e" },
+        { name: "Cholesterol", symbol: "CH", label: "CHOLESTEROL", color: "#ff7675" },
+        { name: "Dietary Fiber", symbol: "DF", label: "DIETARY FIBER", color: "#00b894" },
+        { name: "Sodium (Na)", symbol: "Na", label: "SODIUM (NA)", color: "#74b9ff" },
+        { name: "Potassium (K)", symbol: "K", label: "POTASSIUM (K)", color: "#a29bfe" },
+        { name: "Calcium (Ca)", symbol: "Ca", label: "CALCIUM (CA)", color: "#81ecec" },
+        { name: "Magnesium (Mg)", symbol: "Mg", label: "MAGNESIUM", color: "#55efc4" },
+        { name: "Iron (Fe)", symbol: "Fe", label: "IRON (FE)", color: "#fab1a0" }
+    ];
+
+    let shuffledQuestions = [];
+    let currentIndex = 0;
+    let score = 0;
+    let strikes = 0;
+    let cluesLeft = 3;
+    let pencilMode = false;
+    let eraserMode = false;
+    let secondsElapsed = 0;
+    let timerInterval;
+    let actionHistory = [];
+    let gameStarted = false;
+
+    // Dynamically calculate today's DDMM key automatically behind the scenes
+    const today = new Date();
+    const dd = String(today.getDate()).padStart(2, '0');
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const expectedKey = dd + mm; 
+
+    function initGame() {
+        shuffledQuestions = [...questionsData].sort(() => Math.random() - 0.5);
+        currentIndex = 0;
+        score = 0;
+        strikes = 0;
+        cluesLeft = 3;
+        secondsElapsed = 0;
+        actionHistory = [];
+        
+        document.getElementById('score').innerText = score;
+        document.getElementById('strikes').innerText = strikes;
+        document.getElementById('clue-count').innerText = cluesLeft;
+
+        renderAnswerGrid();
+        loadCurrentRiddle();
+
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            if (!gameStarted) return;
+            secondsElapsed++;
+            let m = Math.floor(secondsElapsed / 60);
+            let s = secondsElapsed % 60;
+            document.getElementById('timer').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+        }, 1000);
+    }
+
+    function renderAnswerGrid() {
+        const grid = document.getElementById('answer-grid');
+        grid.innerHTML = '';
+        gridCards.forEach((card, idx) => {
+            const div = document.createElement('div');
+            div.className = 'answer-card';
+            div.style.background = card.color;
+            div.id = `card-${idx}`;
+            div.innerHTML = `
+                <div class="card-symbol">${card.symbol}</div>
+                <div class="card-label">${card.label}</div>
+            `;
+            div.onclick = () => handleCardClick(card, idx);
+            grid.appendChild(div);
+        });
+    }
+
+    function loadCurrentRiddle() {
+        if (currentIndex >= shuffledQuestions.length) {
+            endGameWin();
+            return;
+        }
+        document.getElementById('q-number').innerText = currentIndex + 1;
+        document.getElementById('riddle-text').innerText = shuffledQuestions[currentIndex].text;
+    }
+
+    function handleCardClick(card, idx) {
+        if (!gameStarted) return;
+        const cardElem = document.getElementById(`card-${idx}`);
+        
+        if (eraserMode) {
+            cardElem.querySelectorAll('.mark-overlay, .draft-note').forEach(el => el.remove());
+            actionHistory.push({ type: 'erase', idx });
+            return;
+        }
+
+        if (pencilMode) {
+            let existingNote = cardElem.querySelector('.draft-note');
+            if (existingNote) existingNote.remove();
+            
+            const note = document.createElement('div');
+            note.className = 'draft-note';
+            note.innerText = card.symbol;
+            cardElem.appendChild(note);
+            actionHistory.push({ type: 'pencil', idx, symbol: card.symbol });
+            return;
+        }
+
+        const currentQ = shuffledQuestions[currentIndex];
+        let isCorrect = card.name.toLowerCase() === currentQ.answer.toLowerCase() || 
+                        card.label.toLowerCase().includes(currentQ.answer.toLowerCase());
+
+        let oldMark = cardElem.querySelector('.mark-overlay');
+        if (oldMark) oldMark.remove();
+
+        const mark = document.createElement('div');
+        mark.className = 'mark-overlay';
+        
+        if (isCorrect) {
+            mark.classList.add('mark-correct');
+            mark.innerHTML = '✔';
+            cardElem.appendChild(mark);
+            score += 100;
+            document.getElementById('score').innerText = score;
+            actionHistory.push({ type: 'correct', idx, cardElem });
+            
+            showPopup("Correct!", "Brilliant! +100 points.", () => {
+                currentIndex++;
+                loadCurrentRiddle();
+            });
+        } else {
+            mark.classList.add('mark-wrong');
+            mark.innerHTML = '✖';
+            cardElem.appendChild(mark);
+            strikes++;
+            score = Math.max(0, score - 100);
+            document.getElementById('score').innerText = score;
+            document.getElementById('strikes').innerText = strikes;
+            actionHistory.push({ type: 'wrong', idx, cardElem });
+
+            if (strikes >= 3) {
+                endGameLoss();
+            } else {
+                showPopup("Wrong Answer", "Incorrect selection! -100 points. Try again or use a free pick.", null);
+            }
+        }
+    }
+
+    function toggleEraser() {
+        eraserMode = !eraserMode;
+        pencilMode = false;
+        document.getElementById('eraser-tool').classList.toggle('active-tool', eraserMode);
+        document.getElementById('pencil-tool').classList.remove('active-tool');
+        document.getElementById('pencil-badge').innerText = "OFF";
+    }
+
+    function togglePencil() {
+        pencilMode = !pencilMode;
+        eraserMode = false;
+        document.getElementById('pencil-tool').classList.toggle('active-tool', pencilMode);
+        document.getElementById('pencil-badge').innerText = pencilMode ? "ON" : "OFF";
+        document.getElementById('eraser-tool').classList.remove('active-tool');
+    }
+
+    function triggerUndo() {
+        if (actionHistory.length === 0) return;
+        let lastAction = actionHistory.pop();
+        let cardElem = document.getElementById(`card-${lastAction.idx}`);
+        if (cardElem) {
+            let mark = cardElem.querySelector('.mark-overlay');
+            if (mark) mark.remove();
+            let note = cardElem.querySelector('.draft-note');
+            if (note) note.remove();
+        }
+    }
+
+    function useClue() {
+        if (!gameStarted) return;
+        if (cluesLeft <= 0) {
+            showPopup("No Free Picks Left", "You have used all 3 maximum free pick chances.", null);
+            return;
+        }
+        cluesLeft--;
+        document.getElementById('clue-count').innerText = cluesLeft;
+
+        const currentQ = shuffledQuestions[currentIndex];
+        let targetIdx = gridCards.findIndex(c => c.name.toLowerCase() === currentQ.answer.toLowerCase() || c.label.toLowerCase().includes(currentQ.answer.toLowerCase()));
+        
+        if (targetIdx !== -1) {
+            let targetCard = document.getElementById(`card-${targetIdx}`);
+            targetCard.style.border = "4px solid #ff4757";
+            setTimeout(() => { targetCard.style.border = "3px solid #2f3640"; }, 2500);
+            showPopup("Free Pick Hint", `The correct answer card is highlighted with a gold/red border! (${currentQ.answer})`, null);
+        }
+    }
+
+    function quitGame() {
+        clearInterval(timerInterval);
+        gameStarted = false;
+        showPromptModal();
+    }
+
+    function showPopup(title, msg, callback) {
+        document.getElementById('passcode-container').style.display = 'none';
+        document.getElementById('modal-title').innerText = title;
+        document.getElementById('modal-msg').innerText = msg;
+        document.getElementById('modal-btn').innerText = "Continue";
+        window.currentModalCallback = callback;
+        document.getElementById('popup-modal').style.display = 'flex';
+    }
+
+    function showPromptModal() {
+        document.getElementById('passcode-container').style.display = 'block';
+        document.getElementById('passcode-input').value = '';
+        document.getElementById('modal-title').innerText = "SECURE ACCESS";
+        document.getElementById('modal-msg').innerText = "Enter the 4-digit passcode provided to unlock the mission game:";
+        document.getElementById('modal-btn').innerText = "Verify & Start";
+        document.getElementById('popup-modal').style.display = 'flex';
+    }
+
+    function verifyPasscode() {
+        const val = document.getElementById('passcode-input').value.trim();
+        if (val === expectedKey) {
+            document.getElementById('popup-modal').style.display = 'none';
+            gameStarted = true;
+            initGame();
+        } else {
+            alert("Incorrect passcode! Please check with your mission administrator.");
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('popup-modal').style.display = 'none';
+        gameStarted = true;
+        if (typeof window.currentModalCallback === 'function') {
+            let cb = window.currentModalCallback;
+            window.currentModalCallback = null;
+            cb();
+        }
+    }
+
+    function endGameWin() {
+        clearInterval(timerInterval);
+        gameStarted = false;
+        showPopup("Fantastic Completion!", `Final Score: ${score}\n\nWell try. This is a part of nutrition awareness mission. Play a few more times and be aware of RDA (Recommended Daily Allowances) levels to adopt a new literal food style. Thank you!`, showPromptModal);
+    }
+
+    function endGameLoss() {
+        clearInterval(timerInterval);
+        gameStarted = false;
+        showPopup("Game Over", `3 strikes reached. Final Score: ${score}\n\nWell try. This is a part of nutrition awareness mission. Play a few more times and be aware of RDA (Recommended Daily Allowances) levels to adopt a new literal food style. Thank you!`, showPromptModal);
+    }
+
+    window.onload = () => {
+        showPromptModal();
+    };
+</script>
+
+</body>
+</html>
